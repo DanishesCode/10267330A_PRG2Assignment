@@ -136,24 +136,64 @@ void DisplayBoardingGatesInfo(Dictionary<string,BoardingGate> boardingGateDictio
 }
 DisplayBoardingGatesInfo(boardingGateDictionary);
 
-void listAirlineAvail()//feature 7.
+void listAirlineAvail()//feature 7
 {
     Console.WriteLine("=============================================");
     Console.WriteLine("List of Airlines for Changi Airport Terminal 5");
     Console.WriteLine("=============================================");
     Console.WriteLine("{0,-15} {1,-30}", "Airline Code", "Airline Name");
-
+    Airline selected = null;
     foreach (var x in airlineDictionary)
     {
         Console.WriteLine("{0,-15} {1,-30}", x.Key, x.Value.Name);
     }
-    Console.Write("Enter Airline Code: ");
-    while (true)
+    while (selected == null)
     {
-        string code = Console.ReadLine();
-        
-        
+        Console.Write("Enter Airline Code: ");
+        string code = Console.ReadLine().ToUpper();
+        if (code.Length != 2)
+        {
+            Console.WriteLine("Please input only 2 letters.Try again!");
+        }
+        else
+        {
+            try
+            {
+                selected = airlineDictionary[code];
+            }
+            catch (KeyNotFoundException)
+            {
+                Console.WriteLine("That airlines does not exist. Try again!");
+            }
+            
+        }
     }
-    
+    Console.WriteLine("=============================================");
+    Console.WriteLine("List of Flights for Singapore Airlines");
+    Console.WriteLine("=============================================");
+    Console.WriteLine("{0,-15} {1,-25} {2,-25} {3,-25} {4,-30}",
+                      "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
+
+    foreach(var x in selected.Flights)
+    {
+        Console.WriteLine("{0,-15} {1,-25} {2,-25} {3,-25} {4,-30}", x.Key, selected.Name, x.Value.Origin, x.Value.Destination, Convert.ToString(x.Value.ExpectedTime));
+    }
+
+    Flight objSelected = null;
+
+    while (objSelected == null)
+    {
+        try
+        {
+            Console.Write("Choose a flight: ");
+            string chosen = Console.ReadLine().ToUpper();
+            objSelected = selected.Flights[chosen];
+        }
+        catch (KeyNotFoundException)
+        {
+            Console.WriteLine("Flight does not exist!");
+        }
+    }
+    Console.WriteLine($"Flight Number: {objSelected.FlightNumber}, Airline Name: {selected.Name}, Origin: {objSelected.Origin},  Destination: {objSelected.Destination}, Expected Departure/Arrival Time: {Convert.ToString(objSelected.ExpectedTime)}");
 }
 listAirlineAvail();
