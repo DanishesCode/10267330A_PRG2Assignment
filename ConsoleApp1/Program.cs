@@ -45,6 +45,7 @@ for (int i = 1; i < dataAirline.Length; i++) {//Created the airlines from the lo
         }
 }
     Airline selectedAirline = new Airline(currentData[0], currentData[1],currentAirlineFlights);
+    airlineDictionary.Add(currentData[1], selectedAirline);
 }
 string[] flightsLeft = csvlines;
 for (int i = 1; i < dataBoarding.Length; i++) { //Created the boardingGates objects from files//
@@ -140,3 +141,13 @@ void DisplayBoardingGatesInfo(Dictionary<string,BoardingGate> boardingGateDictio
     }
 }
 DisplayBoardingGatesInfo(boardingGateDictionary);
+
+void listAirlineAvail()//feature 7.
+{
+    Console.WriteLine("Here are the airlines available:");
+    foreach(var x in airlineDictionary)
+    {
+        Console.WriteLine($"({x.Key}) {x.Value.Name}");
+    }
+}
+listAirlineAvail();
