@@ -1,9 +1,14 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿//Danish does question 1,4,7,8
+//Tze wei does question 2,3,5,6,9
 using ConsoleApp1;
 using System.Globalization;
+string[] dataAirline = File.ReadAllLines("airlines.csv");
+string[] dataBoarding = File.ReadAllLines("boardinggates.csv");
 string[] csvlines = File.ReadAllLines("flights.csv");
+Dictionary<string,Airline> airlineDictionary = new Dictionary<string,Airline>();
+Dictionary<string,BoardingGate> boardingGateDictionary = new Dictionary<string,BoardingGate>();
 Dictionary<string,Flight> flightsDictionary = new Dictionary<string, Flight>();
-for (int i=1; i<csvlines.Length; i++)
+for (int i=1; i<csvlines.Length; i++)//Creating the flight objects from the loaded files//
 {
     string[] values = csvlines[i].Split(',');
     DateTime expectedTime = DateTime.Parse(values[3].Trim());
@@ -28,6 +33,83 @@ for (int i=1; i<csvlines.Length; i++)
     }
 
     flightsDictionary.Add(flight.FlightNumber, flight);
+}
+
+for (int i = 1; i < dataAirline.Length; i++) {//Created the airlines from the loaded files into a dictionary//
+    string[] currentData = dataAirline[i].Split(",");
+    Dictionary<string,Flight> currentAirlineFlights = new Dictionary<string,Flight>();
+    foreach(var x in flightsDictionary){
+        if(x.Key.Substring(0,2) == currentData[1])
+        {
+            currentAirlineFlights.Add(x.Value.FlightNumber, x.Value);
+        }
+}
+    Airline selectedAirline = new Airline(currentData[0], currentData[1],currentAirlineFlights);
+}
+string[] flightsLeft = csvlines;
+for (int i = 1; i < dataBoarding.Length; i++) { //Created the boardingGates objects from files//
+    string[] currentData = dataBoarding[i].Split(",");
+    BoardingGate toAdd = new BoardingGate(currentData[0], Convert.ToBoolean(currentData[2]), Convert.ToBoolean(currentData[1]), Convert.ToBoolean(currentData[3]),null);
+    boardingGateDictionary.Add(currentData[0], toAdd);
+}
+
+for (int i = 1; i < flightsLeft.Length; i++) { //Sorting the boarding gates for the flights//
+    string[] currentData = flightsLeft[i].Split(",");
+    Flight flightObj = flightsDictionary[currentData[0]];
+    string specialCode;
+    if (currentData[4] != null)
+    {
+        specialCode = currentData[4];
+        if(specialCode == "DDJB")
+        {
+            foreach (var x in boardingGateDictionary)
+            {
+                BoardingGate selected = x.Value;
+                if (selected.SupportsDDJB == true && selected.Flight == null)
+                {
+                    selected.Flight = flightObj;
+                    break;
+                }
+            }
+
+        }
+        else if(specialCode == "CFFT")
+        {
+            foreach (var x in boardingGateDictionary)
+            {
+                BoardingGate selected = x.Value;
+                if (selected.SupportsCFFT == true && selected.Flight == null)
+                {
+                    selected.Flight = flightObj;
+                    break;
+                }
+            }
+        }
+        else//supports LWTT//
+        {
+            foreach (var x in boardingGateDictionary)
+            {
+                BoardingGate selected = x.Value;
+                if ( selected.SupportsLWTT == true && selected.Flight == null)
+                {
+                    selected.Flight = flightObj;
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        foreach(var x in boardingGateDictionary)
+        {
+            BoardingGate selected = x.Value;
+            if(selected.SupportsDDJB == false && selected.SupportsCFFT == false && selected.SupportsLWTT == false && selected.Flight == null)
+            {
+                selected.Flight = flightObj;
+                break;
+            }
+        }
+    }
 }
 
 DisplayBasicInfo(flightsDictionary);
