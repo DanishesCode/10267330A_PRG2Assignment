@@ -142,7 +142,7 @@ void DisplayBoardingGatesInfo(Dictionary<string,BoardingGate> boardingGateDictio
 }
 DisplayBoardingGatesInfo(boardingGateDictionary);
 
-void listAirlineAvail()//feature 7
+void listAirlineAvail()//feature 7.
 {
     Console.WriteLine("Here are the airlines available:");
     foreach(var x in airlineDictionary)
