@@ -53,7 +53,6 @@ for (int i = 1; i < dataBoarding.Length; i++) { //Created the boardingGates obje
     BoardingGate toAdd = new BoardingGate(currentData[0], Convert.ToBoolean(currentData[2]), Convert.ToBoolean(currentData[1]), Convert.ToBoolean(currentData[3]),null);
     boardingGateDictionary.Add(currentData[0], toAdd);
 }
-
 for (int i = 1; i < flightsLeft.Length; i++) { //Sorting the boarding gates for the flights//
     string[] currentData = flightsLeft[i].Split(",");
     Flight flightObj = flightsDictionary[currentData[0]];
@@ -112,7 +111,6 @@ for (int i = 1; i < flightsLeft.Length; i++) { //Sorting the boarding gates for 
         }
     }
 }
-
 DisplayBasicInfo(flightsDictionary);
 void DisplayBasicInfo(Dictionary<string, Flight> flights)
 {
@@ -125,29 +123,37 @@ void DisplayBasicInfo(Dictionary<string, Flight> flights)
 
 void DisplayBoardingGatesInfo(Dictionary<string,BoardingGate> boardingGateDictionary)//feature 4//
 {
-    foreach(var x in boardingGateDictionary)
+    Console.WriteLine("=================================================================");
+    Console.WriteLine("List of Boarding Gates for Changi Airport Terminal 5");
+    Console.WriteLine("=================================================================");
+    Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20}", "Gate Name", "DDJB", "CFFT", "LWTT");
+    foreach (var x in boardingGateDictionary)
     {
         BoardingGate obj = x.Value;
-        Flight flight = obj.Flight;
-        if(flight!= null)
-        {
-            Console.WriteLine($"Boarding gate name: {obj.GateName},Support LWTT: {Convert.ToString(obj.SupportsLWTT)},Support DDJB:{Convert.ToString(obj.SupportsDDJB)},Support CFFT:{Convert.ToString(obj.SupportsCFFT)}, Flight Number:{flight.FlightNumber}");
-        }
-        else
-        {
-            Console.WriteLine($"Boarding gate name: {obj.GateName},Support LWTT: {Convert.ToString(obj.SupportsLWTT)},Support DDJB:{Convert.ToString(obj.SupportsDDJB)},Support CFFT:{Convert.ToString(obj.SupportsCFFT)}, Flight Number:N/A");
-        }
-        
+        Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20}", obj.GateName, Convert.ToString(obj.SupportsDDJB), Convert.ToString(obj.SupportsCFFT), Convert.ToString(obj.SupportsLWTT));
+
     }
 }
 DisplayBoardingGatesInfo(boardingGateDictionary);
 
 void listAirlineAvail()//feature 7.
 {
-    Console.WriteLine("Here are the airlines available:");
-    foreach(var x in airlineDictionary)
+    Console.WriteLine("=============================================");
+    Console.WriteLine("List of Airlines for Changi Airport Terminal 5");
+    Console.WriteLine("=============================================");
+    Console.WriteLine("{0,-15} {1,-30}", "Airline Code", "Airline Name");
+
+    foreach (var x in airlineDictionary)
     {
-        Console.WriteLine($"({x.Key}) {x.Value.Name}");
+        Console.WriteLine("{0,-15} {1,-30}", x.Key, x.Value.Name);
     }
+    Console.Write("Enter Airline Code: ");
+    while (true)
+    {
+        string code = Console.ReadLine();
+        
+        
+    }
+    
 }
 listAirlineAvail();
