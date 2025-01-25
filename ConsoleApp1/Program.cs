@@ -113,7 +113,7 @@ for (int i = 1; i < flightsLeft.Length; i++) { //Sorting the boarding gates for 
         }
     }
 }
-DisplayBasicInfo(flightsDictionary);
+
 void DisplayBasicInfo(Dictionary<string, Flight> flights)
 {
     foreach (var flight in flights.Values)
@@ -136,7 +136,7 @@ void DisplayBoardingGatesInfo(Dictionary<string,BoardingGate> boardingGateDictio
 
     }
 }
-DisplayBoardingGatesInfo(boardingGateDictionary);
+
 
 void listAirlineAvail()//feature 7
 {
@@ -171,7 +171,7 @@ void listAirlineAvail()//feature 7
         }
     }
     Console.WriteLine("=============================================");
-    Console.WriteLine("List of Flights for Singapore Airlines");
+    Console.WriteLine($"List of Flights for {selected.Name}");
     Console.WriteLine("=============================================");
     Console.WriteLine("{0,-15} {1,-25} {2,-25} {3,-25} {4,-30}",
                       "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
@@ -198,7 +198,6 @@ void listAirlineAvail()//feature 7
     }
     Console.WriteLine($"Flight Number: {objSelected.FlightNumber}, Airline Name: {selected.Name}, Origin: {objSelected.Origin},  Destination: {objSelected.Destination}, Expected Departure/Arrival Time: {Convert.ToString(objSelected.ExpectedTime)}");
 }
-listAirlineAvail();
 
 void AddNewFlights(Dictionary<string, Flight> flights)
 {
@@ -405,5 +404,256 @@ bool PromptYesNo(string message)
     string response = Console.ReadLine().ToUpper();
     return response == "Y";
 }
-AssignBoardingGate();
+
+
+
+void modifyFlightDetail()//feature 8
+{
+
+    Console.WriteLine("=============================================");
+    Console.WriteLine("List of Airlines for Changi Airport Terminal 5");
+    Console.WriteLine("=============================================");
+    Console.WriteLine("{0,-15} {1,-30}", "Airline Code", "Airline Name");
+    Airline selected = null;
+    foreach (var x in airlineDictionary)
+    {
+        Console.WriteLine("{0,-15} {1,-30}", x.Key, x.Value.Name);
+    }
+    while (selected == null)
+    {
+        Console.Write("Enter Airline Code: ");
+        string code = Console.ReadLine().ToUpper();
+        if (code.Length != 2)
+        {
+            Console.WriteLine("Please input only 2 letters.Try again!");
+        }
+        else
+        {
+            try
+            {
+                selected = airlineDictionary[code];
+            }
+            catch (KeyNotFoundException)
+            {
+                Console.WriteLine("That airlines does not exist. Try again!");
+            }
+
+        }
+    }
+    Console.WriteLine("=============================================");
+    Console.WriteLine($"List of Flights for {selected.Name}");
+    Console.WriteLine("=============================================");
+    Console.WriteLine("{0,-15} {1,-25} {2,-25} {3,-25} {4,-30}",
+                      "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
+
+    foreach (var x in selected.Flights)
+    {
+        Console.WriteLine("{0,-15} {1,-25} {2,-25} {3,-25} {4,-30}", x.Key, selected.Name, x.Value.Origin, x.Value.Destination, Convert.ToString(x.Value.ExpectedTime));
+    }
+
+    Flight objSelected = null;
+
+    while (objSelected == null)
+    {
+        try
+        {
+            Console.Write("Choose an existing Flight to modify or delete: ");
+            string chosen = Console.ReadLine().ToUpper();
+            objSelected = selected.Flights[chosen];
+        }
+        catch (KeyNotFoundException)
+        {
+            Console.WriteLine("Flight does not exist!");
+        }
+    }
+    Boolean status = true;//triggers to false if it ends
+    string option;
+    string option2;
+    Console.WriteLine("1.Modify Flight");
+    Console.WriteLine("2.Delete Flight");
+    while (true)
+    {
+        Console.Write("Choose an option:");
+        option = Console.ReadLine();
+        if(option =="1" || option == "2")
+        {
+            break;
+        }
+        else
+        {
+            Console.WriteLine("Please choose a valid option!");
+            continue;
+        }
+    }
+    if(option == "1")//If Modify flight
+    {
+        while (status)
+        {
+            Console.WriteLine("1.Modify Basic Information");
+            Console.WriteLine("2.Modify Status");
+            Console.WriteLine("3.Modify Special Request Code");
+            Console.WriteLine("4.Modify Boarding Gate");
+            Console.Write("Choose an option:");
+            option2 = Console.ReadLine();
+            if(option2 == "1")
+            {
+                Console.Write("Enter new Origin: ");
+                string originNew = Console.ReadLine();
+                Console.Write("Enter new Destination: ");
+                string destinationNew = Console.ReadLine();
+                Boolean check = true;
+                DateTime newExpectedTime;
+                while (check)
+                {
+                    try
+                    {
+                        Console.Write("Enter new Expected Departure/Arrival Time (dd/mm/yyyy hh:mm): ");
+                        newExpectedTime = Convert.ToDateTime(Console.ReadLine());
+                        objSelected.ExpectedTime = newExpectedTime;
+                        check = false;
+                    }
+                    catch(FormatException) {
+                        Console.WriteLine("Please follow the format given! Try again!");
+                    }
+                }
+                objSelected.Origin = originNew;
+                objSelected.Destination = destinationNew;
+                
+                Console.WriteLine("Flight Updated!");
+                Console.WriteLine($"Flight Number: {objSelected.FlightNumber}");
+                Console.WriteLine($"Airline Name: {selected.Name}");
+                Console.WriteLine($"Origin: {objSelected.Origin}");
+                Console.WriteLine($"Destination: {objSelected.Origin}");
+                Console.WriteLine($"Expected Departure/Arrival Time: {Convert.ToString(objSelected.ExpectedTime)}");
+                Console.WriteLine($"Status: {objSelected.Status}");
+                if(objSelected.GetType() == typeof(NORMFlight))
+                {
+                    Console.WriteLine("Special Request Code: Null");
+                }else if(objSelected.GetType() == typeof(LWTTFlight))
+                {
+                    Console.WriteLine("Special Request Code: LWTT");
+                }
+                else if(objSelected.GetType() == typeof(DDJBFlight))
+                {
+                    Console.WriteLine("Special Request Code: DDJB");
+                }
+                else
+                {
+                    Console.WriteLine("Special Request Code: CFFT");
+                }
+                BoardingGate found = null;
+                foreach(var x in boardingGateDictionary)
+                {
+                    if( x.Value.Flight.FlightNumber == objSelected.FlightNumber)
+                    {
+                        found = x.Value;
+                    }
+                }
+                if (found != null) {
+                    Console.WriteLine($"Boarding Gate: {found.GateName}");
+                }
+                else
+                {
+                    Console.WriteLine("Boarding Gate: Unassigned");
+                }
+                status = false;
+            }
+            else {
+                while (status)
+                {
+                    try
+                    {
+                        Console.Write("[Y} To Confirm [N]To go back");
+                        string reply = Console.ReadLine().ToUpper();
+                        if(reply == "Y" || reply == "N")
+                        {
+                            if(reply == "Y")
+                            {
+                                selected.Flights.Remove(objSelected.FlightNumber);
+                                status = false;
+                                
+                            }
+                            else
+                            {
+                                status = false; break;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Please enter a valid respond");
+                        }
+                    }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine(e.ToString());
+                    }
+                }
+            }
+        }
+    }
+   
+
+
+}
+
+
+
+//MAIN PROGRAM//
+while (true)
+{
+    Console.WriteLine("=============================================");
+    Console.WriteLine("Welcome to Changi Airport Terminal 5");
+    Console.WriteLine("=============================================");
+    Console.WriteLine("1. List All Flights");
+    Console.WriteLine("2. List Boarding Gates");
+    Console.WriteLine("3. Assign a Boarding Gate to a Flight");
+    Console.WriteLine("4. Create Flight");
+    Console.WriteLine("5. Display Airline Flights");
+    Console.WriteLine("6. Modify Flight Details");
+    Console.WriteLine("7. Display Flight Schedule");
+    Console.WriteLine("0. Exit");
+    Console.WriteLine();
+    Console.Write("Please select your option: ");
+    string input = Console.ReadLine();
+
+    if (input != "1" || input != "2" || input != "3" || input != "4" || input != "5" || input != "6" || input != "7" || input!= "0")
+    {
+        if (input == "1")
+        {
+           
+        }
+        else if (input == "2")
+        {
+           DisplayBoardingGatesInfo(boardingGateDictionary);
+        }
+        else if (input == "3")
+        {
+
+        }
+        else if (input == "4")
+        {
+
+        }
+        else if (input == "5")
+        {
+            listAirlineAvail();
+        }
+        else if (input == "6")
+        {
+            modifyFlightDetail();
+        }
+        else
+        {
+            Console.WriteLine("Goodbye!");
+            break;
+        }
+
+    }
+    else
+    {
+        Console.WriteLine("Please input a valid option!");
+    }
+}
+
+
 
