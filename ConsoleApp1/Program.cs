@@ -122,3 +122,21 @@ void DisplayBasicInfo(Dictionary<string, Flight> flights)
     }
 }
 
+void DisplayBoardingGatesInfo(Dictionary<string,BoardingGate> boardingGateDictionary)//feature 4//
+{
+    foreach(var x in boardingGateDictionary)
+    {
+        BoardingGate obj = x.Value;
+        Flight flight = obj.Flight;
+        if(flight!= null)
+        {
+            Console.WriteLine($"Boarding gate name: {obj.GateName},Support LWTT: {Convert.ToString(obj.SupportsLWTT)},Support DDJB:{Convert.ToString(obj.SupportsDDJB)},Support CFFT:{Convert.ToString(obj.SupportsCFFT)}, Flight Number:{flight.FlightNumber}");
+        }
+        else
+        {
+            Console.WriteLine($"Boarding gate name: {obj.GateName},Support LWTT: {Convert.ToString(obj.SupportsLWTT)},Support DDJB:{Convert.ToString(obj.SupportsDDJB)},Support CFFT:{Convert.ToString(obj.SupportsCFFT)}, Flight Number:N/A");
+        }
+        
+    }
+}
+DisplayBoardingGatesInfo(boardingGateDictionary);
