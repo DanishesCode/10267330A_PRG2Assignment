@@ -2,6 +2,7 @@
 //Tze wei does question 2,3,5,6,9
 using ConsoleApp1;
 using System.Globalization;
+using System.Text;
 using System.Security.Cryptography;
 string[] dataAirline = File.ReadAllLines("airlines.csv");
 string[] dataBoarding = File.ReadAllLines("boardinggates.csv");
@@ -198,6 +199,85 @@ void listAirlineAvail()//feature 7
     Console.WriteLine($"Flight Number: {objSelected.FlightNumber}, Airline Name: {selected.Name}, Origin: {objSelected.Origin},  Destination: {objSelected.Destination}, Expected Departure/Arrival Time: {Convert.ToString(objSelected.ExpectedTime)}");
 }
 listAirlineAvail();
+
+void AddNewFlights(Dictionary<string, Flight> flights)
+{
+    bool addMoreFlights = true;
+
+    while (addMoreFlights)
+    {
+        Console.WriteLine("Enter Flight Number:");
+        string flightNumber = Console.ReadLine().Trim();
+
+        Console.WriteLine("Enter Origin:");
+        string origin = Console.ReadLine().Trim();
+
+        Console.WriteLine("Enter Destination:");
+        string destination = Console.ReadLine().Trim();
+
+        Console.WriteLine("Enter Expected Departure/Arrival Time (dd/MM/yyyy hh:mm tt):");
+        string input = Console.ReadLine().Trim();
+
+        DateTime expectedTime;
+
+        try
+        {
+            expectedTime = DateTime.Parse(input); 
+            Console.WriteLine($"Parsed time: {expectedTime}");
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Invalid date format. Please enter the date and time in the correct format.");
+            return;
+        }
+
+        Console.WriteLine("Enter Special Request Code (CFFT/DDJB/LWTT/None):");
+        string specialRequestCode = Console.ReadLine().Trim().ToUpper();
+
+        Flight flight;
+        if (specialRequestCode == "CFFT")
+        {
+            flight = new CFFTFlight(flightNumber, origin, destination, expectedTime, "On Time", 150.0);
+        }
+        else if (specialRequestCode == "DDJB")
+        {
+            flight = new DDJBFlight(flightNumber, origin, destination, expectedTime, "On Time", 300.0);
+        }
+        else if (specialRequestCode == "LWTT")
+        {
+            flight = new LWTTFlight(flightNumber, origin, destination, expectedTime, "On Time", 500.0);
+        }
+        else
+        {
+            flight = new NORMFlight(flightNumber, origin, destination, expectedTime, "On Time");
+            specialRequestCode = ""; 
+        }
+
+        flights.Add(flight.FlightNumber, flight);
+
+        try
+        {
+            using (StreamWriter sw = new StreamWriter("flights.csv", append: true, Encoding.UTF8))
+            {
+                sw.WriteLine($"{flight.FlightNumber},{flight.Origin},{flight.Destination},{expectedTime:hh:mm tt},{specialRequestCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error appending to file: {ex.Message}");
+        }
+
+        Console.WriteLine($"Flight {flight.FlightNumber} has been added!");
+
+        Console.WriteLine("Would you like to add another flight? (Y/N)");
+        string addAnotherFlightResponse = Console.ReadLine().Trim().ToUpper();
+        addMoreFlights = addAnotherFlightResponse == "Y";
+    }
+
+    Console.WriteLine("Flight(s) have been successfully added.");
+}
+AddNewFlights(flightsDictionary);
+
 void AssignBoardingGate()
 {
     Console.WriteLine("=============================================");
@@ -326,3 +406,4 @@ bool PromptYesNo(string message)
     return response == "Y";
 }
 AssignBoardingGate();
+
