@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp1
     {
-        internal abstract class Flight
-        {
+        internal abstract class Flight : IComparable<Flight> // Add IComparable<Flight> interface
+    {
             protected const double ARRIVING_FLIGHT_FEE = 500.0;
             protected const double DEPARTING_FLIGHT_FEE = 800.0;
             protected const double BOARDING_GATE_BASE_FEE = 300.0;
@@ -27,7 +27,11 @@ namespace ConsoleApp1
             }
 
             public abstract double CalculateFees();
-            public override string ToString()
+            public int CompareTo(Flight other)
+            {
+            return this.ExpectedTime.CompareTo(other.ExpectedTime);
+            }
+        public override string ToString()
             {
                 return $"Flight Number: {FlightNumber}, Origin: {Origin}, Destination: {Destination}, " +
                        $"Expected Time: {ExpectedTime}, Status: {Status}";

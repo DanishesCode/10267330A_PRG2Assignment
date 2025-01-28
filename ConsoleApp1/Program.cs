@@ -4,6 +4,7 @@ using ConsoleApp1;
 using System.Globalization;
 using System.Text;
 using System.Security.Cryptography;
+using System.Collections.Immutable;
 string[] dataAirline = File.ReadAllLines("airlines.csv");
 string[] dataBoarding = File.ReadAllLines("boardinggates.csv");
 string[] csvlines = File.ReadAllLines("flights.csv");
@@ -144,21 +145,16 @@ foreach (var line in airlineMap)
 
         foreach (var flight in flights.Values)
         {
-            // Assuming the flight number starts with the airline code (e.g., "SQ 101")
-            string airlineCode = flight.FlightNumber.Split(' ')[0]; // Extract airline code from the FlightNumber
-
-            // Look up the full airline name in the airlineMapDictionary
+            string airlineCode = flight.FlightNumber.Split(' ')[0];
             string airlineName = "";
             if (airlineMapDictionary.ContainsKey(airlineCode))
             {
-                airlineName = airlineMapDictionary[airlineCode]; // Get full airline name
+                airlineName = airlineMapDictionary[airlineCode];
             }
             else
             {
-                airlineName = "Unknown Airline"; // Default if airline code not found
+                airlineName = "Unknown Airline"; 
             }
-
-        // Display the flight info with the full airline name
         Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-25}",
                       flight.FlightNumber,
                       airlineName,
@@ -366,16 +362,12 @@ foreach (var line in airlineMap)
 
         Console.WriteLine($"Flight {selectedFlight.FlightNumber} has been successfully assigned to Boarding Gate {selectedGate.GateName}!");
     }
-
-    // Helper methods
     Flight GetFlight()
     {
         while (true)
         {
             Console.Write("Enter Flight Number: ");
             string flightNumber = Console.ReadLine().ToUpper();
-
-            // Check if flight exists in the dictionary
             if (flightsDictionary.ContainsKey(flightNumber))
             {
                 return flightsDictionary[flightNumber];
@@ -448,10 +440,57 @@ foreach (var line in airlineMap)
         string response = Console.ReadLine().ToUpper();
         return response == "Y";
     }
+    BoardingGate UpdateGetBoardingGate(Flight flight)
+{
+    // Here you could implement logic to fetch boarding gate for a flight, 
+    // if it's assigned to a gate from your boardingGateDictionary
+    foreach (var gate in boardingGateDictionary.Values)
+    {
+        if (gate.Flight == flight)
+        {
+            return gate;
+        }
+    }
+    return null;
+}
+void DisplaySortedFlights(Dictionary<string, Flight> flights, Dictionary<string, string> airlineMapDictionary) //Feature 9
+{
+    List<Flight> sortedFlights = flights.Values.ToList();
+    sortedFlights.Sort(); 
+    Console.WriteLine("=============================================");
+    Console.WriteLine("Flight Schedule for Changi Airport Terminal 5");
+    Console.WriteLine("=============================================");
+    Console.WriteLine("{0,-10} {1,-20} {2,-20} {3,-20} {4,-15} {5,-20} {6,-10}",
+        "Flight", "Airline Name", "Origin", "Destination", "Boarding Gate", "Expected", "Status");
+    Console.WriteLine(new string('-', 115));
+
+    foreach (Flight flight in sortedFlights)
+    {
+        string airlineCode = flight.FlightNumber.Substring(0, 2);
+
+        if (!airlineMapDictionary.ContainsKey(airlineCode))
+        {
+            continue; 
+        }
+
+        string airlineName = airlineMapDictionary[airlineCode];
+        BoardingGate gate = UpdateGetBoardingGate(flight);
+        string boardingGate = gate != null ? gate.GateName : "Unassigned";
+        flight.Status = "Scheduled";
+        
+        Console.WriteLine("{0,-10} {1,-20} {2,-20} {3,-20} {4,-15} {5,-20} {6,-10}",
+            flight.FlightNumber,
+            airlineName,
+            flight.Origin,
+            flight.Destination,
+            boardingGate,
+            flight.ExpectedTime.ToString("dd/MM/yyyy hh:mm tt"), 
+            flight.Status);
+    }
+}
 
 
-
-    void modifyFlightDetail()//feature 8
+void modifyFlightDetail()//feature 8
     {
 
         Console.WriteLine("=============================================");
@@ -690,6 +729,10 @@ foreach (var line in airlineMap)
             {
                 modifyFlightDetail();
             }
+            else if (input == "7")
+        {
+            DisplaySortedFlights(flightsDictionary,airlineMapDictionary);
+        }
             else
             {
                 Console.WriteLine("Goodbye!");
