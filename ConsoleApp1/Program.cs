@@ -770,14 +770,36 @@ void modifyFlightDetail()//feature 8
     }
     else //delete flight
     {
-        foreach(var x in selectedAirline.Flights)
+        while (true)
         {
-            if(x.Value == selectedFlight)
+            Console.WriteLine("Are you sure you want to continue? [Y}Yes [N]No");
+            string chosen6 = Console.ReadLine().ToUpper();
+           if(chosen6 == "Y" || chosen6 =="N")
             {
-                selectedAirline.Flights.Remove(x.Key);
-                break;
+                if (chosen6 == "Y")
+                {
+                    foreach (var x in selectedAirline.Flights)
+                    {
+                        if (x.Value == selectedFlight)
+                        {
+                            selectedAirline.Flights.Remove(x.Key);
+                            break;
+                        }
+                    }
+                    break;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Please enter a valid choice!");
+
             }
         }
+        
     }
 
 }
