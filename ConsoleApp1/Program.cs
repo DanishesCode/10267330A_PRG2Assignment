@@ -170,13 +170,21 @@ foreach (var line in airlineMap)
         Console.WriteLine("=================================================================");
         Console.WriteLine("List of Boarding Gates for Changi Airport Terminal 5");
         Console.WriteLine("=================================================================");
-        Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20}", "Gate Name", "DDJB", "CFFT", "LWTT");
+        Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-20}", "Gate Name", "DDJB", "CFFT", "LWTT","Flight Number");
         foreach (var x in boardingGateDictionary)
         {
             BoardingGate obj = x.Value;
-            Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20}", obj.GateName, Convert.ToString(obj.SupportsDDJB), Convert.ToString(obj.SupportsCFFT), Convert.ToString(obj.SupportsLWTT));
+            if(obj.Flight == null)
+        {
+            Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-20}", obj.GateName, Convert.ToString(obj.SupportsDDJB), Convert.ToString(obj.SupportsCFFT), Convert.ToString(obj.SupportsLWTT), "N/A");
+        }
+        else
+        {
+            Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-20}", obj.GateName, Convert.ToString(obj.SupportsDDJB), Convert.ToString(obj.SupportsCFFT), Convert.ToString(obj.SupportsLWTT), Convert.ToString(obj.Flight.FlightNumber));
 
         }
+
+    }
     }
 
 
@@ -239,7 +247,33 @@ foreach (var line in airlineMap)
             }
         }
         Console.WriteLine($"Flight Number: {objSelected.FlightNumber}, Airline Name: {selected.Name}, Origin: {objSelected.Origin},  Destination: {objSelected.Destination}, Expected Departure/Arrival Time: {Convert.ToString(objSelected.ExpectedTime)}");
+    if (objSelected.GetType() == typeof(LWTTFlight)) {
+        Console.WriteLine("Special Request Code: LWTT");
+    }else if (objSelected.GetType() == typeof(CFFTFlight))
+    {
+        Console.WriteLine("Special Request Code: CFFT");
+
     }
+    else if (objSelected.GetType() == typeof(DDJBFlight))
+    {
+        Console.WriteLine("Special Request Code: DDJB");
+
+    }
+    else
+    {
+        Console.WriteLine("Special Request Code: N/A");
+
+    }
+    foreach(var x in boardingGateDictionary)
+    {
+        if(x.Value.Flight == objSelected)
+        {
+            BoardingGate gate = x.Value;
+            Console.WriteLine($"{objSelected.FlightNumber} is assigned to boarding gate {gate.GateName}");
+        }
+    }
+
+}
 
     void AddNewFlights(Dictionary<string, Flight> flights)
     {
