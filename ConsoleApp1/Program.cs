@@ -75,72 +75,14 @@ foreach (var line in airlineMap)
         Airline selectedAirline = new Airline(currentData[0], currentData[1], currentAirlineFlights);
         airlineDictionary.Add(currentData[1], selectedAirline);
     }
-    string[] flightsLeft = csvlines;
+    
     for (int i = 1; i < dataBoarding.Length; i++)
     { //Created the boardingGates objects from files//
         string[] currentData = dataBoarding[i].Split(",");
         BoardingGate toAdd = new BoardingGate(currentData[0], Convert.ToBoolean(currentData[2]), Convert.ToBoolean(currentData[1]), Convert.ToBoolean(currentData[3]), null);
         boardingGateDictionary.Add(currentData[0], toAdd);
     }
-    for (int i = 1; i < flightsLeft.Length; i++)
-    { //Sorting the boarding gates for the flights//
-        string[] currentData = flightsLeft[i].Split(",");
-        Flight flightObj = flightsDictionary[currentData[0]];
-        string specialCode;
-        if (currentData[4] != null)
-        {
-            specialCode = currentData[4];
-            if (specialCode == "DDJB")
-            {
-                foreach (var x in boardingGateDictionary)
-                {
-                    BoardingGate selected = x.Value;
-                    if (selected.SupportsDDJB == true && selected.Flight == null)
-                    {
-                        selected.Flight = flightObj;
-                        break;
-                    }
-                }
-
-            }
-            else if (specialCode == "CFFT")
-            {
-                foreach (var x in boardingGateDictionary)
-                {
-                    BoardingGate selected = x.Value;
-                    if (selected.SupportsCFFT == true && selected.Flight == null)
-                    {
-                        selected.Flight = flightObj;
-                        break;
-                    }
-                }
-            }
-            else//supports LWTT//
-            {
-                foreach (var x in boardingGateDictionary)
-                {
-                    BoardingGate selected = x.Value;
-                    if (selected.SupportsLWTT == true && selected.Flight == null)
-                    {
-                        selected.Flight = flightObj;
-                        break;
-                    }
-                }
-            }
-        }
-        else
-        {
-            foreach (var x in boardingGateDictionary)
-            {
-                BoardingGate selected = x.Value;
-                if (selected.SupportsDDJB == false && selected.SupportsCFFT == false && selected.SupportsLWTT == false && selected.Flight == null)
-                {
-                    selected.Flight = flightObj;
-                    break;
-                }
-            }
-        }
-    }
+    
 
     void DisplayBasicInfo(Dictionary<string, Flight> flights)
     {
@@ -810,9 +752,170 @@ void modifyFlightDetail()//feature 8
     }
 
 }
+//Advanced feature (a)
+void processUnassignedFlights()
+{
+    Queue<Flight> unassignedFlights = new Queue<Flight>();
+    Queue<Flight> assignedFlights = new Queue<Flight>();
+    List<BoardingGate> unassignedGates = new List<BoardingGate>();
+    List<BoardingGate> assignedGates = new List<BoardingGate>();
+    List<BoardingGate> autoAssignedGates = new List<BoardingGate>();
 
+    foreach (var x in flightsDictionary)
+    {
+        bool haveGate = false;
 
+        foreach (var y in boardingGateDictionary)
+        {
+            if (y.Value.Flight == x.Value)
+            {
+                haveGate = true;
+                break;
+            }
+        }
 
+        if (haveGate)
+        {
+            assignedFlights.Enqueue(x.Value);
+        }
+        else
+        {
+            unassignedFlights.Enqueue(x.Value);
+        }
+    }
+
+    Console.WriteLine($"Total number of unassigned flights: {unassignedFlights.Count()}");
+
+    foreach (var x in boardingGateDictionary)
+    {
+        if (x.Value.Flight == null)
+        {
+            unassignedGates.Add(x.Value);
+            Console.WriteLine(x.Value.GateName);
+        }
+        else
+        {
+            assignedGates.Add(x.Value);
+        }
+    }
+
+    Console.WriteLine($"Total number of unassigned gates: {unassignedGates.Count()}");
+
+    List<Flight> remainingUnassignedFlights = new List<Flight>();
+    while (unassignedFlights.Count > 0)
+    {
+        Flight flightSelected = unassignedFlights.Dequeue();
+        bool assigned = false;
+
+        foreach (BoardingGate y in unassignedGates.ToList())
+        {
+            if ((flightSelected.GetType() == typeof(CFFTFlight) && y.SupportsCFFT) ||
+                (flightSelected.GetType() == typeof(LWTTFlight) && y.SupportsLWTT) ||
+                (flightSelected.GetType() == typeof(DDJBFlight) && y.SupportsDDJB) ||
+                (!y.SupportsCFFT && !y.SupportsDDJB && y.SupportsLWTT))
+            {
+                y.Flight = flightSelected;
+                autoAssignedGates.Add(y);
+                unassignedGates.Remove(y);
+                assigned = true;
+                break;
+            }
+        }
+
+        if (!assigned)
+        {
+            remainingUnassignedFlights.Add(flightSelected);
+        }
+    }
+
+    Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-30} {5,-40} {6,-50}",
+        "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time", "Special Request Code", "Boarding Gate");
+
+    foreach (Flight x in assignedFlights)
+    {
+        string airlineName = null;
+        string boardingGateName = null;
+
+        foreach (var y in boardingGateDictionary)
+        {
+            if (y.Value.Flight == x)
+            {
+                boardingGateName = y.Key;
+                break;
+            }
+        }
+
+        foreach (var y in airlineDictionary)
+        {
+            if (y.Value.Flights.ContainsValue(x))
+            {
+                airlineName = y.Value.Name;
+                break;
+            }
+        }
+
+        if (x.GetType() == typeof(CFFTFlight))
+        {
+            Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-30} {5,-40} {6,-50}",
+                x.FlightNumber, airlineName, x.Origin, x.Destination, Convert.ToString(x.ExpectedTime), "CFFT", boardingGateName);
+        }
+        else if (x.GetType() == typeof(LWTTFlight))
+        {
+            Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-30} {5,-40} {6,-50}",
+                x.FlightNumber, airlineName, x.Origin, x.Destination, Convert.ToString(x.ExpectedTime), "LWTT", boardingGateName);
+        }
+        else if (x.GetType() == typeof(DDJBFlight))
+        {
+            Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-30} {5,-40} {6,-50}",
+                x.FlightNumber, airlineName, x.Origin, x.Destination, Convert.ToString(x.ExpectedTime), "DDJB", boardingGateName);
+        }
+        else
+        {
+            Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-30} {5,-40} {6,-50}",
+                x.FlightNumber, airlineName, x.Origin, x.Destination, Convert.ToString(x.ExpectedTime), "N/A", boardingGateName);
+        }
+    }
+
+    foreach (BoardingGate y in autoAssignedGates)
+    {
+        Flight x = y.Flight;
+        string airlineName = null;
+        string boardingGateName = y.GateName;
+
+        foreach (var z in airlineDictionary)
+        {
+            if (z.Value.Flights.ContainsValue(x))
+            {
+                airlineName = z.Value.Name;
+                break;
+            }
+        }
+
+        if (x.GetType() == typeof(CFFTFlight))
+        {
+            Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-30} {5,-40} {6,-50}",
+                x.FlightNumber, airlineName, x.Origin, x.Destination, Convert.ToString(x.ExpectedTime), "CFFT", boardingGateName);
+        }
+        else if (x.GetType() == typeof(LWTTFlight))
+        {
+            Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-30} {5,-40} {6,-50}",
+                x.FlightNumber, airlineName, x.Origin, x.Destination, Convert.ToString(x.ExpectedTime), "LWTT", boardingGateName);
+        }
+        else if (x.GetType() == typeof(DDJBFlight))
+        {
+            Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-30} {5,-40} {6,-50}",
+                x.FlightNumber, airlineName, x.Origin, x.Destination, Convert.ToString(x.ExpectedTime), "DDJB", boardingGateName);
+        }
+        else
+        {
+            Console.WriteLine("{0,-15} {1,-20} {2,-20} {3,-20} {4,-30} {5,-40} {6,-50}",
+                x.FlightNumber, airlineName, x.Origin, x.Destination, Convert.ToString(x.ExpectedTime), "N/A", boardingGateName);
+        }
+    }
+
+    Console.WriteLine($"Total number of flights and Boarding Gates Processed: {autoAssignedGates.Count()}");
+    Console.WriteLine($"Total percentage of Flights and Boarding Gates that were processed automatically: {((double)autoAssignedGates.Count() / (autoAssignedGates.Count() + assignedGates.Count()) * 100):F2}%");
+}
 
 // Advanced Feature (b)
 BoardingGate CheckBoardingGate(Flight flight) // check if boardinggate is available
@@ -899,6 +1002,7 @@ while (true)
         Console.WriteLine("5. Display Airline Flights");
         Console.WriteLine("6. Modify Flight Details");
         Console.WriteLine("7. Display Flight Schedule");
+        Console.WriteLine("8. Automatically process all unassigned Flights and gates");
         Console.WriteLine("0. Exit");
         Console.WriteLine();
         Console.Write("Please select your option: ");
@@ -933,6 +1037,10 @@ while (true)
             else if (input == "7")
         {
             DisplaySortedFlights(flightsDictionary,airlineMapDictionary);
+        }
+            else if(input == "8")
+        {
+            processUnassignedFlights();
         }
             else
             {
