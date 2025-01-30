@@ -1,5 +1,12 @@
 ﻿//Danish does question 1,4,7,8
 //Tze wei does question 2,3,5,6,9
+
+//==========================================================
+// Student Number	: S10267330A
+// Student Name	: Danish
+// Partner Name	: TzeWei
+//==========================================================
+
 using ConsoleApp1;
 using System.Globalization;
 using System.Text;

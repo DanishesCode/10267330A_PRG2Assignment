@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+//==========================================================
+// Student Number	: S10267330A
+// Student Name	: Danish
+// Partner Name	: TzeWei
+//==========================================================
 
 namespace ConsoleApp1
     {
