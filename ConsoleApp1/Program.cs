@@ -807,6 +807,74 @@ void modifyFlightDetail()//feature 8
 
 
 
+// Advanced Feature (b)
+BoardingGate CheckBoardingGate(Flight flight) // check if boardinggate is available
+{
+    foreach (var gate in boardingGateDictionary.Values)
+    {
+        if (gate.Flight == flight)
+        {
+            return gate;
+        }
+    }
+    Console.WriteLine($"Error: Flight {flight.FlightNumber} does not have a boarding gate assigned.");
+    Console.WriteLine("Please assign a boarding gate before proceeding.\n");
+    return null;
+}
+double totalFees = 0;
+double totalDiscounts = 0;
+foreach (var airlineEntry in airlineDictionary)
+{
+    var airline = airlineEntry.Value;
+    Console.WriteLine($"Airline: {airline.Name} ({airline.Code})");
+
+    double subtotalFees = 0;
+    double subtotalDiscounts = 0;
+
+   
+    foreach (var flightEntry in flightsDictionary)
+    {
+        var flight = flightEntry.Value; 
+
+        
+        if (flight.FlightNumber.Substring(0, 2) == airline.Code) 
+        {
+            double flightFees = CalculateFlightFees(flight);
+            subtotalFees += flightFees;
+        }
+    }
+
+    // Apply discounts after calculating subtotal fees
+    subtotalDiscounts = CalculateDiscounts(airline, subtotalFees);
+    double totalAirlineFees = subtotalFees - subtotalDiscounts;
+    
+    Console.WriteLine($"Subtotal Fees: ${subtotalFees}");
+    Console.WriteLine($"Subtotal Discounts: ${subtotalDiscounts}");
+    Console.WriteLine($"Total Fees: ${totalAirlineFees}");
+
+    totalFees += subtotalFees;
+    totalDiscounts += subtotalDiscounts;
+
+    Console.WriteLine(); 
+}
+
+// Calculate Total
+double finalTotalFees = totalFees - totalDiscounts;
+double discountPercentage = (totalDiscounts / totalFees) * 100;
+
+Console.WriteLine($"Total Subtotal Fees: ${totalFees}");
+Console.WriteLine($"Total Subtotal Discounts: ${totalDiscounts}");
+Console.WriteLine($"Final Total Fees: ${finalTotalFees}");
+Console.WriteLine($"Discount Percentage: {discountPercentage:F2}%");
+
+double CalculateFlightFees(Flight flight)
+{
+    return flight.CalculateFees();
+}
+double CalculateDiscounts(Airline airline, double subtotalFees)
+{
+    return airline.CalculateFees();
+}
 
 
 

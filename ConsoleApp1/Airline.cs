@@ -44,40 +44,38 @@ namespace ConsoleApp1
         }
 
         public double CalculateFees() {
-            double discount = 0;
-            double total = 0;
+            double discounts = 0;
+            double totalFees = 0;
             if (flights.Count >= 3)
             {
                 int batch = (int)Math.Floor((double)flights.Count / 3);
-                discount = batch * 350;
+                discounts = batch * 350;
             }
-            foreach (var (key, value) in flights) {
-                DateTime expectedTime = value.ExpectedTime;
-                if (expectedTime < Convert.ToDateTime("11:00") || expectedTime > Convert.ToDateTime("21:00"))
+            foreach (var flight in flights.Values) {
+                DateTime expectedTime = flight.ExpectedTime;
+                if (expectedTime < DateTime.Parse("11:00 AM") || expectedTime > DateTime.Parse ("9:00 PM"))
                 {
-                    discount += 110;
+                    discounts += 110;
                 }
-                if (value.Origin == "DXB" || value.Origin == "BKK" || value.Origin == "NRT")
+                if (flight.Origin == "Dubai (DXB)" || flight.Origin == "Bangkok (BKK)" || flight.Origin == "Tokyo (NRT)")
                 {
-                    discount += 25;
+                    discounts += 25;
                 }
-                if (value.FlightNumber == "SQ 693" || value.FlightNumber == "CX 312" || value.FlightNumber == "QF 981")
+                if (flight.GetType().Name.Contains("DDJB") || flight.GetType().Name.Contains("CFFT") || flight.GetType().Name.Contains("LWTT"))
                 {
+                    // No discount for these specific flights
                 }
                 else
                 {
-                    discount += 50;
+                    discounts += 50;
                 }
-                total += Convert.ToDouble(value.CalculateFees());
+                totalFees += Convert.ToDouble(flight.CalculateFees());
             }
             if (flights.Count > 5)
             {
-                return( total * 0.97)-discount;
+                discounts += totalFees * 0.03;
             }
-            else
-            {
-                return total-discount;
-            }
+            return discounts;
 
         }
 

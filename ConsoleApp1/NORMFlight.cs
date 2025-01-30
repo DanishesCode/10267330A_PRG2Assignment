@@ -14,8 +14,8 @@ namespace ConsoleApp1
             double totalFee = 0.0;
 
             // Determine if flight is arriving or departing
-            if (Destination == "SIN") totalFee += ARRIVING_FLIGHT_FEE;
-            if (Origin == "SIN") totalFee += DEPARTING_FLIGHT_FEE;
+            if (Destination == "Singapore (SIN)") totalFee += ARRIVING_FLIGHT_FEE;
+            if (Origin == "Singapore (SIN)") totalFee += DEPARTING_FLIGHT_FEE;
 
             // Add boarding gate base fee
             totalFee += BOARDING_GATE_BASE_FEE;
