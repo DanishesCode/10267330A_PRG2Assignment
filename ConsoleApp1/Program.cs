@@ -294,7 +294,7 @@ foreach (var line in airlineMap)
             catch (FormatException)
             {
                 Console.WriteLine("Invalid date format. Please enter the date and time in the correct format.");
-                return;
+                continue;
             }
             break;
         }
