@@ -12,6 +12,8 @@ using System.Globalization;
 using System.Text;
 using System.Security.Cryptography;
 using System.Collections.Immutable;
+using System.Text.RegularExpressions;
+using System.ComponentModel.Design;
 string[] dataAirline = File.ReadAllLines("airlines.csv");
 string[] dataBoarding = File.ReadAllLines("boardinggates.csv");
 string[] csvlines = File.ReadAllLines("flights.csv");
@@ -228,21 +230,61 @@ foreach (var line in airlineMap)
     {
         bool addMoreFlights = true;
 
-        while (addMoreFlights)
+    while (addMoreFlights)
+    {
+        string flightNumber;
+        while (true)
         {
             Console.WriteLine("Enter Flight Number:");
-            string flightNumber = Console.ReadLine().Trim();
+            flightNumber = Console.ReadLine().Trim().ToUpper();
+            if (string.IsNullOrWhiteSpace(flightNumber))
+            {
+                Console.WriteLine("❌ Flight number cannot be empty.");
+                continue;
+            }
 
+            if (!Regex.IsMatch(flightNumber, @"^[A-Z]{2}\s?\d{1,4}$"))
+            {
+                Console.WriteLine("Invalid format. Flight number must be two letters followed by 1–4 digits (e.g., SQ115, MH298).");
+                continue;
+            }
+
+            if (flights.ContainsKey(flightNumber))
+            {
+                Console.WriteLine($"Flight number {flightNumber} already exists. Please enter a unique flight number.");
+                continue;
+            }
+            break;
+        }
+        string origin;
+        while (true)
+        {
             Console.WriteLine("Enter Origin:");
-            string origin = Console.ReadLine().Trim();
-
+            origin = Console.ReadLine().Trim();
+            if (!Regex.IsMatch(origin, @"^[A-Za-z\s]+ \([A-Z]{3}\)$"))
+            {
+                Console.WriteLine("Invalid format. Enter in 'City (IATA)' format (e.g., Singapore (SIN)).");
+                continue;
+            }
+            break;
+        }
+        string destination;
+        while (true)
+        {
             Console.WriteLine("Enter Destination:");
-            string destination = Console.ReadLine().Trim();
-
+            destination = Console.ReadLine().Trim();
+            if (!Regex.IsMatch(destination, @"^[A-Za-z\s]+ \([A-Z]{3}\)$"))
+            {
+                Console.WriteLine("Invalid format. Enter in 'City (IATA)' format (e.g., Tokyo (NRT)).");
+                continue;
+            }
+            break;
+        }
+        DateTime expectedTime;
+        while (true)
+        {
             Console.WriteLine("Enter Expected Departure/Arrival Time (dd/MM/yyyy hh:mm tt):");
             string input = Console.ReadLine().Trim();
-
-            DateTime expectedTime;
 
             try
             {
@@ -254,11 +296,23 @@ foreach (var line in airlineMap)
                 Console.WriteLine("Invalid date format. Please enter the date and time in the correct format.");
                 return;
             }
-
+            break;
+        }
+        string specialRequestCode;
+        while (true)
+        {
             Console.WriteLine("Enter Special Request Code (CFFT/DDJB/LWTT/None):");
-            string specialRequestCode = Console.ReadLine().Trim().ToUpper();
+            specialRequestCode = Console.ReadLine().Trim().ToUpper();
+            if (!new[] { "CFFT", "DDJB", "LWTT", "NONE" }.Contains(specialRequestCode))
+            {
+                Console.WriteLine("Invalid special request code. Enter CFFT, DDJB, LWTT, or None.");
+                continue;
+            }
+            break;
+        }
 
-            Flight flight;
+
+        Flight flight;
             if (specialRequestCode == "CFFT")
             {
                 flight = new CFFTFlight(flightNumber, origin, destination, expectedTime, "On Time", 150.0);
@@ -281,10 +335,10 @@ foreach (var line in airlineMap)
 
             try
             {
-                using (StreamWriter sw = new StreamWriter("flights.csv", append: true, Encoding.UTF8))
-                {
-                    sw.WriteLine($"{flight.FlightNumber},{flight.Origin},{flight.Destination},{expectedTime:hh:mm tt},{specialRequestCode}");
-                }
+            using (StreamWriter sw = new StreamWriter("flights.csv", append: true))
+            {
+                sw.WriteLine($"{flight.FlightNumber},{flight.Origin},{flight.Destination},{expectedTime:hh:mm tt},{specialRequestCode}");
+            }
             }
             catch (Exception ex)
             {
@@ -312,7 +366,7 @@ foreach (var line in airlineMap)
         {
             Console.WriteLine("Operation cancelled. No flight selected.");
             return;
-        }
+    }
 
 
         BoardingGate selectedGate = GetBoardingGate();
@@ -375,12 +429,14 @@ foreach (var line in airlineMap)
                 if (gate.Flight != null)
                 {
                     Console.WriteLine($"Gate {gateName} is already assigned to flight {gate.Flight.FlightNumber}. Try another gate.");
+                    continue;
                 }
-                else
-                {
-                    return gate;
-                }
+            else
+            {
+                return gate;
             }
+            
+        }
             else
             {
                 Console.WriteLine("Boarding Gate not found. Try again? (Y/N): ");
@@ -388,8 +444,7 @@ foreach (var line in airlineMap)
             }
         }
     }
-
-    void UpdateFlightStatus(Flight flight)
+void UpdateFlightStatus(Flight flight)
     {
         Console.WriteLine("1. Delayed");
         Console.WriteLine("2. Boarding");
@@ -419,9 +474,14 @@ foreach (var line in airlineMap)
 
     bool PromptYesNo(string message)
     {
+    while (true)
+    {
         Console.Write(message);
         string response = Console.ReadLine().ToUpper();
-        return response == "Y";
+        if (response == "Y") return true;
+        if (response == "N") return false;
+        Console.WriteLine(" Invalid Response. Please enter 'Y' for Yes or 'N' for No.");
+    }
     }
     BoardingGate UpdateGetBoardingGate(Flight flight)
 {
@@ -931,6 +991,7 @@ BoardingGate CheckBoardingGate(Flight flight) // check if boardinggate is availa
     Console.WriteLine("Please assign a boarding gate before proceeding.\n");
     return null;
 }
+void DisplayTotalFees() { 
 double totalFees = 0;
 double totalDiscounts = 0;
 foreach (var airlineEntry in airlineDictionary)
@@ -967,15 +1028,15 @@ foreach (var airlineEntry in airlineDictionary)
 
     Console.WriteLine(); 
 }
+    // Calculate Total
+    double finalTotalFees = totalFees - totalDiscounts;
+    double discountPercentage = (totalDiscounts / totalFees) * 100;
 
-// Calculate Total
-double finalTotalFees = totalFees - totalDiscounts;
-double discountPercentage = (totalDiscounts / totalFees) * 100;
-
-Console.WriteLine($"Total Subtotal Fees: ${totalFees}");
-Console.WriteLine($"Total Subtotal Discounts: ${totalDiscounts}");
-Console.WriteLine($"Final Total Fees: ${finalTotalFees}");
-Console.WriteLine($"Discount Percentage: {discountPercentage:F2}%");
+    Console.WriteLine($"Total Subtotal Fees: ${totalFees}");
+    Console.WriteLine($"Total Subtotal Discounts: ${totalDiscounts}");
+    Console.WriteLine($"Final Total Fees: ${finalTotalFees}");
+    Console.WriteLine($"Discount Percentage: {discountPercentage:F2}%");
+}
 
 double CalculateFlightFees(Flight flight)
 {
@@ -1003,12 +1064,13 @@ while (true)
         Console.WriteLine("6. Modify Flight Details");
         Console.WriteLine("7. Display Flight Schedule");
         Console.WriteLine("8. Automatically process all unassigned Flights and gates");
+        Console.WriteLine("9. Display Total Fees Per Airline");
         Console.WriteLine("0. Exit");
         Console.WriteLine();
         Console.Write("Please select your option: ");
         string input = Console.ReadLine();
 
-        if (input != "1" || input != "2" || input != "3" || input != "4" || input != "5" || input != "6" || input != "7" || input != "0")
+        if (input != "1" || input != "2" || input != "3" || input != "4" || input != "5" || input != "6" || input != "7" || input !="8" || input!="9" || input != "0")
         {
             if (input == "1")
             {
@@ -1021,7 +1083,7 @@ while (true)
             else if (input == "3")
             {
                 AssignBoardingGate();
-            }
+        }
             else if (input == "4")
             {
                 AddNewFlights(flightsDictionary);
@@ -1041,6 +1103,10 @@ while (true)
             else if(input == "8")
         {
             processUnassignedFlights();
+        }
+            else if (input == "9")
+        {
+            DisplayTotalFees();
         }
             else
             {
