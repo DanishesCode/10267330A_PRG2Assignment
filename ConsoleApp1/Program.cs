@@ -765,6 +765,13 @@ void modifyFlightDetail()//feature 8
                     Console.WriteLine("Boarding gate does not exist! Try again!");
                 }
             }
+            foreach(var x in boardingGateDictionary)
+            {
+                if(x.Value.Flight == selectedFlight)
+                {
+                    x.Value.Flight = null;
+                }
+            }
             selectedBoardingGate.Flight = selectedFlight;
             Console.WriteLine($"{selectedFlight.FlightNumber} new asssigned gate is {selectedBoardingGate.GateName}");
 
