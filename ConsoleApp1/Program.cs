@@ -51,12 +51,8 @@ for (int i=1; i<csvlines.Length; i++)//Creating the flight objects from the load
 foreach (var line in airlineMap)
 {
     string[] values = line.Split(',');
-
-    // Trim the values to remove any extra spaces
-    string airlineName = values[0].Trim(); // Full airline name
-    string airlineCode = values[1].Trim(); // Airline code
-
-    // Store the airline code and name in the dictionary
+    string airlineName = values[0].Trim(); 
+    string airlineCode = values[1].Trim(); 
     if (!airlineMapDictionary.ContainsKey(airlineCode))
     {
         airlineMapDictionary.Add(airlineCode, airlineName);
@@ -483,10 +479,8 @@ void UpdateFlightStatus(Flight flight)
         Console.WriteLine(" Invalid Response. Please enter 'Y' for Yes or 'N' for No.");
     }
     }
-    BoardingGate UpdateGetBoardingGate(Flight flight)
+    BoardingGate UpdateGetBoardingGate(Flight flight) //Check if gate is assigned to flight
 {
-    // Here you could implement logic to fetch boarding gate for a flight, 
-    // if it's assigned to a gate from your boardingGateDictionary
     foreach (var gate in boardingGateDictionary.Values)
     {
         if (gate.Flight == flight)
