@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board</title>
+    <style>
+        .board {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .column {
+            background: #f0f0f0;
+            border-radius: 5px;
+            padding: 1rem;
+            min-width: 300px;
+        }
+        .card {
+            background: white;
+            padding: 0.5rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            cursor: move;
+            transition: opacity 0.2s;
+        }
+        .card.dragging {
+            opacity: 0.5;
+        }
+        .add-task {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 0.5rem;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="board">
+        <div class="column" id="todo">
+            <h2>To Do</h2>
+            <div class="add-task">
+                <input type="text" id="newTask" placeholder="New task...">
+                <button onclick="addTask()">Add</button>
+            </div>
+        </div>
+        <div class="column" id="progress">
+            <h2>In Progress</h2>
+        </div>
+        <div class="column" id="done">
+            <h2>Done</h2>
+        </div>
+    </div>
+
+    <script>
+        let draggedItem = null;
+        let sourceColumn = null;
+
+        function addTask() {
+            const input = document.getElementById('newTask');
+            if (input.value.trim()) {
+                const column = document.getElementById('todo');
+                const card = createCard(input.value);
+                column.appendChild(card);
+                input.value = '';
+                saveState();
+            }
+        }
+
+        function createCard(text) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.draggable = true;
+            card.textContent = text;
+            card.id = 'card-' + Date.now();
+            
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+            
+            return card;
+        }
+
+        function handleDragStart(e) {
+            draggedItem = e.target;
+            sourceColumn = draggedItem.parentElement;
+            setTimeout(() => {
+                draggedItem.classList.add('dragging');
+            }, 0);
+        }
+
+        function handleDragEnd() {
+            draggedItem.classList.remove('dragging');
+            draggedItem = null;
+            sourceColumn = null;
+            saveState();
+        }
+
+        document.querySelectorAll('.column').forEach(column => {
+            column.addEventListener('dragover', e => {
+                e.preventDefault();
+            });
+            
+            column.addEventListener('drop', e => {
+                e.preventDefault();
+                if (draggedItem) {
+                    column.appendChild(draggedItem);
+                }
+            });
+        });
+
+        function saveState() {
+            const state = {
+                todo: getColumnState('todo'),
+                progress: getColumnState('progress'),
+                done: getColumnState('done')
+            };
+            localStorage.setItem('kanbanState', JSON.stringify(state));
+        }
+
+        function getColumnState(columnId) {
+            return Array.from(document.getElementById(columnId).children)
+                .filter(el => el.classList.contains('card'))
+                .map(card => card.textContent);
+        }
+
+        function loadState() {
+            const state = JSON.parse(localStorage.getItem('kanbanState'));
+            if (state) {
+                restoreColumn('todo', state.todo);
+                restoreColumn('progress', state.progress);
+                restoreColumn('done', state.done);
+            }
+        }
+
+        function restoreColumn(columnId, tasks) {
+            const column = document.getElementById(columnId);
+            column.querySelectorAll('.card').forEach(card => card.remove());
+            tasks.forEach(task => {
+                column.appendChild(createCard(task));
+            });
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', loadState);
+    </script>
+</body>
+</html>
